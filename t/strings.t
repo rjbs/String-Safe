@@ -4,15 +4,15 @@ use utf8;
 
 use Test::More;
 
-use String::Safe::Utils qw(text_string byte_string);
+use String::Safe::Utils -all;
 
 my $SSB = 'String::Safe::Byte';
 my $SST = 'String::Safe::Text';
 
 subtest "starting with text" => sub {
-  my $text  = text_string("Queensrÿche");
+  my $text  = text("Queensrÿche");
 
-  isa_ok($text, $SST, "result of text_string");
+  isa_ok($text, $SST, "result of text");
 
   is(length($$text), 11, "we've put the 11 text character string into a $SST");
 
@@ -35,9 +35,9 @@ subtest "starting with bytes" => sub {
   my @bytes = qw(51 75 65 65 6e 73 72 c3 bf 63 68 65);
   my $byte_raw = join q{}, map { chr hex } @bytes;
 
-  my $bytes = byte_string($byte_raw);
+  my $bytes = bytes($byte_raw);
 
-  isa_ok($bytes, $SSB, "result of byte_string");
+  isa_ok($bytes, $SSB, "result of bytes()");
 
   is(length($$bytes), @bytes, "we have as many bytes as we expected");
 

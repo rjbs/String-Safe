@@ -27,8 +27,7 @@ sub from_byte_string {
   $input    = $$input if ref $input;
   my $text  = Encode::decode($encoding, $input, $check);
 
-  return String::Safe::Byte->from_raw_string(\$bytes);
-  ...;
+  return $class->from_raw_string(\$text);
 }
 
 1;
