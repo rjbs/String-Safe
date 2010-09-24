@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 package String::Safe::Byte;
-use base 'String::Safe';
+use base 'String::Safe::Base';
 
 use Encode ();
 
@@ -9,7 +9,10 @@ require String::Safe::Text;
 
 sub decode {
   my ($self, $encoding, $check) = @_;
-  $encoding = 'utf-8' unless defined $encoding;
+
+  Carp::croak("no encoding supplied for bytes-to-text conversion")
+    unless defined $encoding;
+
   $check    = Encode::FB_CROAK unless defined $check;
 
   my $copy  = $$self;
@@ -21,7 +24,9 @@ sub decode {
 sub from_text_string {
   my ($class, $input, $encoding, $check) = @_;
 
-  $encoding = 'utf-8' unless defined $encoding;
+  Carp::croak("no encoding supplied for text-to-bytes conversion")
+    unless defined $encoding;
+
   $check    = Encode::FB_CROAK unless defined $check;
 
   $input    = $$input if ref $input;
