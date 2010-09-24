@@ -33,8 +33,13 @@ sub _fallback_from_array {
 # * Maybe we're expecting a OTHERKIND string -- enc/decode
 # * Maybe we demand an object -- die if not received
 sub _string_processor_gen {
-  my ($wanted, $enc_dec) = @_;
+  my ($wanted, $default_raw) = @_;
 
+  # raw - fatal
+  # raw - [ text, $encode, $check ]
+  # raw - [ byte, $encode, $check ]
+  # raw - text (implies: utf-8, croak)
+  # raw - byte (implies: utf-8, croak)
   return sub {
     my ($class, $name, $arg) = @_;
 

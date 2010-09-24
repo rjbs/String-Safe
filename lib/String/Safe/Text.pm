@@ -18,4 +18,17 @@ sub encode {
   return String::Safe::Byte->from_raw_string(\$bytes);
 }
 
+sub from_byte_string {
+  my ($class, $input, $encoding, $check) = @_;
+
+  $encoding = 'utf-8' unless defined $encoding;
+  $check    = Encode::FB_CROAK unless defined $check;
+
+  $input    = $$input if ref $input;
+  my $text  = Encode::decode($encoding, $input, $check);
+
+  return String::Safe::Byte->from_raw_string(\$bytes);
+  ...;
+}
+
 1;
