@@ -48,7 +48,7 @@ subtest "starting with text" => sub {
   is(
     length($$text),
     test_text->{length},
-    "...making an encoded copy of the $SST is safe",
+    "... making an encoded copy of the $SST is safe",
   );
 
   cmp_ok(length $$bytes, '>', length $$text, "encoded string is longer");
@@ -107,21 +107,21 @@ subtest "various inputs to text()" => sub {
   }
 
   my $meta = text( text( test_text->{string} ) );
-  isa_ok($meta, $SST, 'text($safe_text)');
-  is($$meta, test_text->{string}, '${ text($safe_text) }');
+  isa_ok($meta, $SST, 'text($Safe_String_Text)');
+  is($$meta, test_text->{string}, '${ text($Safe_String_Text) }');
 
   {
     my $lives = eval { text($SSB->from_raw_string( test_bytes->{string} )); 1 };
     my $error = $@;
     ok(! $lives, "trying to text() a $SSB is fatal");
-    like($error, qr/can't build.+from $SSB/, "...with expected message");
+    like($error, qr/can't build.+from $SSB/, "... with expected message");
   }
 
   {
     my $lives = eval { text( [ ] ); 1 };
     my $error = $@;
     ok(! $lives, "trying to text() a non-string ref is fatal");
-    like($error, qr/can't build.+from ARRAY/, "...with expected message");
+    like($error, qr/can't build.+from ARRAY/, "... with expected message");
   }
 };
 
@@ -146,43 +146,151 @@ subtest "various inputs to bytes()" => sub {
 
   {
     my $bytes = bytes( \'literal' );
-    isa_ok($bytes, $SSB, 'bytes($string)');
-    is($$bytes, 'literal', '${ bytes($string) } eq $string');
+    isa_ok($bytes, $SSB, 'bytes(\\"literal")');
+    is($$bytes, 'literal', '${ bytes(\\"literal") } eq $string');
   }
 
   my $meta = bytes( bytes( test_bytes->{string} ) );
-  isa_ok($meta, $SSB, 'bytes($safe_bytes)');
-  is($$meta, test_bytes->{string}, '${ bytes($safe_bytes) }');
+  isa_ok($meta, $SSB, 'bytes($Safe_String_Bytes)');
+  is($$meta, test_bytes->{string}, '${ bytes($Safe_String_Bytes) }');
 
   {
     my $lives = eval { bytes($SST->from_raw_string( test_text->{string} )); 1 };
     my $error = $@;
     ok(! $lives, "trying to bytes() a $SST is fatal");
-    like($error, qr/can't build.+from $SST/, "...with expected message");
+    like($error, qr/can't build.+from $SST/, "... with expected message");
   }
 
   {
     my $lives = eval { bytes( [ ] ); 1 };
     my $error = $@;
     ok(! $lives, "trying to bytes() a non-string ref is fatal");
-    like($error, qr/can't build.+from ARRAY/, "...with expected message");
+    like($error, qr/can't build.+from ARRAY/, "... with expected message");
   }
 };
 
 subtest "various inputs to decode()" => sub {
-  fail('unimplemented')
+  {
+    my $lives = eval { decode( test_bytes->{string} ); 1 };
+    my $error = $@;
+    ok(! $lives, "we can't decode without specifying the encoding");
+    like($error, qr/no encoding supplied/, "... with expected message");
+  }
+
+  {
+    my $text = decode( test_bytes->{string}, 'utf-8' );
+    isa_ok($text, $SST, 'decode($string, "utf-8")');
+    is($$text, test_text->{string}, 'decoded bytes eq test text');
+  }
+
+  {
+    my $text = decode( \(test_bytes->{string}), 'utf-8' );
+    isa_ok($text, $SST, 'decode(\\$string, "utf-8")');
+    is($$text, test_text->{string}, 'decoded bytes eq test text');
+  }
+
+  {
+    my $text = decode( "Queensr\xc3\xbfche", 'utf-8' );
+    isa_ok($text, $SST, 'decode("literal", "utf-8")');
+    is($$text, test_text->{string}, 'decoded literal is what we want');
+  }
+
+  {
+    my $text = decode( \"Queensr\xc3\xbfche", 'utf-8' );
+    isa_ok($text, $SST, 'decode(\\"literal", "utf-8")');
+    is($$text, test_text->{string}, 'decoded literal-ref is what we want');
+  }
+
+  my $meta = decode( bytes( test_bytes->{string} ), 'utf-8' );
+  isa_ok($meta, $SST, 'decode( $Safe_String_Bytes, "utf-8")');
+  is($$meta, test_text->{string}, 'decode($Safe_String_Bytes) eq text');
+
+  {
+    my $lives = eval {
+      decode($SST->from_raw_string( test_text->{string} ), 'utf-8');
+      1;
+    };
+    my $error = $@;
+    ok(! $lives, "trying to decode() a $SST is fatal");
+    like($error, qr/can't build.+from $SST/, "... with expected message");
+  }
+
+  {
+    my $lives = eval { decode( [ ], 'utf-8' ); 1 };
+    my $error = $@;
+    ok(! $lives, "trying to decode() a non-string ref is fatal");
+    like($error, qr/can't build.+from ARRAY/, "... with expected message");
+  }
 };
 
 subtest "various inputs to encode()" => sub {
-  fail('unimplemented')
+  {
+    my $bytes = encode( test_text->{string} );
+    isa_ok($bytes, $SSB, 'encode( $text_string )');
+    is($$bytes, test_bytes->{string}, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $bytes = encode( test_text->{string}, 'utf-8' );
+    isa_ok($bytes, $SSB, 'encode($text_string, "utf-8")');
+    is($$bytes, test_bytes->{string}, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $latin_1 = Encode::encode('Latin-1', test_text->{string});
+    my $bytes = encode( test_text->{string}, 'Latin-1' );
+    isa_ok($bytes, $SSB, 'encode($text_string, "Latin-1")');
+    is($$bytes, $latin_1, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $bytes = encode( \(test_text->{string}) );
+    isa_ok($bytes, $SSB, 'encode(\\$string)');
+    is($$bytes, test_bytes->{string}, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $bytes = encode("Queensrÿche");
+    isa_ok($bytes, $SSB, 'encode("literal")');
+    is($$bytes, test_bytes->{string}, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $bytes = encode( \"Queensrÿche" );
+    isa_ok($bytes, $SSB, 'encode(\\"literal")');
+    is($$bytes, test_bytes->{string}, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $meta = encode( text( test_text->{string} ) );
+    isa_ok($meta, $SSB, 'encode( $Safe_String_Text )');
+    is($$meta, test_bytes->{string}, '... bytes eq expected bytestring');
+  }
+
+  {
+    my $lives = eval {
+      encode($SSB->from_raw_string( test_bytes->{string} ) );
+      1;
+    };
+    my $error = $@;
+    ok(! $lives, "trying to encode() a $SSB is fatal");
+    like($error, qr/can't build.+from $SSB/, "...with expected message");
+  }
+
+  {
+    my $lives = eval { encode( [ ] ); 1 };
+    my $error = $@;
+    ok(! $lives, "trying to encode() a non-string ref is fatal");
+    like($error, qr/can't build.+from ARRAY/, "...with expected message");
+  }
 };
 
-subtest "is_text and assert_text" => sub {
-  fail('unimplemented')
-};
-
-subtest "is_bytes and assert_bytes" => sub {
-  fail('unimplemented')
-};
+# subtest "is_text and assert_text" => sub {
+#   fail('unimplemented')
+# };
+# 
+# subtest "is_bytes and assert_bytes" => sub {
+#   fail('unimplemented')
+# };
 
 done_testing;

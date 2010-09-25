@@ -24,15 +24,22 @@ sub decode {
 sub from_text_string {
   my ($class, $input, $encoding, $check) = @_;
 
-  Carp::croak("no encoding supplied for text-to-bytes conversion")
-    unless defined $encoding;
+  $encoding = 'utf-8' unless defined $encoding;
+
+  if (my $blessed = Scalar::Util::blessed($input)) {
+    Carp::croak("can't build a $class from $blessed object")
+      if ! $input->isa('String::Safe::Text');;
+  } elsif (my $reftype = Scalar::Util::reftype($input)) {
+    Carp::croak("can't build a $class from $reftype object")
+      if $reftype ne 'SCALAR'
+  }
 
   $check    = Encode::FB_CROAK unless defined $check;
 
   $input    = $$input if ref $input;
-  my $bytes = Encode::encode($encoding, $input, $check);
+  my $text  = Encode::encode($encoding, $input, $check);
 
-  return $class->from_raw_string(\$bytes);
+  return $class->from_raw_string(\$text);
 }
 
 1;

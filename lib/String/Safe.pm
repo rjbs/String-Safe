@@ -52,11 +52,7 @@ sub bytes {
 sub decode {
   my ($class, $bytes, $encoding, $check) = @_;
 
-  my $wanted = $class->_text_class;
-
-  return $bytes if Scalar::Util::blessed($bytes) && $bytes->isa( $wanted );
-
-  $wanted->from_byte_string($bytes, $encoding, $check);
+  $class->_text_class->from_byte_string($bytes, $encoding, $check);
 }
 
 # valid input  : raw string, text string
@@ -64,10 +60,7 @@ sub decode {
 sub encode {
   my ($class, $text, $encoding, $check) = @_;
 
-  my $wanted = $class->_byte_class;
-  return $text if Scalar::Util::blessed($text) && $text->isa( $wanted );
-
-  $wanted->from_text_string($text, $encoding, $check);
+  $class->_byte_class->from_text_string($text, $encoding, $check);
 }
 
 sub is_text  { Scalar::Util::blessed($_[1]) && $_[1]->isa($_[0]->_text_class) }
