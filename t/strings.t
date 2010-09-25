@@ -110,10 +110,19 @@ subtest "various inputs to text()" => sub {
   isa_ok($meta, $SST, 'text($safe_text)');
   is($$meta, test_text->{string}, '${ text($safe_text) }');
 
-  my $lives = eval { text($SSB->from_raw_string( test_bytes->{string} )); 1 };
-  my $error = $@;
-  ok(! $lives, "trying to text() a $SSB is fatal");
-  like($error, qr/can't build.+from a $SSB/, "...with expected message");
+  {
+    my $lives = eval { text($SSB->from_raw_string( test_bytes->{string} )); 1 };
+    my $error = $@;
+    ok(! $lives, "trying to text() a $SSB is fatal");
+    like($error, qr/can't build.+from $SSB/, "...with expected message");
+  }
+
+  {
+    my $lives = eval { text( [ ] ); 1 };
+    my $error = $@;
+    ok(! $lives, "trying to text() a non-string ref is fatal");
+    like($error, qr/can't build.+from ARRAY/, "...with expected message");
+  }
 };
 
 subtest "various inputs to bytes()" => sub {
@@ -145,10 +154,19 @@ subtest "various inputs to bytes()" => sub {
   isa_ok($meta, $SSB, 'bytes($safe_bytes)');
   is($$meta, test_bytes->{string}, '${ bytes($safe_bytes) }');
 
-  my $lives = eval { bytes($SST->from_raw_string( test_text->{string} )); 1 };
-  my $error = $@;
-  ok(! $lives, "trying to bytes() a $SST is fatal");
-  like($error, qr/can't build.+from a $SST/, "...with expected message");
+  {
+    my $lives = eval { bytes($SST->from_raw_string( test_text->{string} )); 1 };
+    my $error = $@;
+    ok(! $lives, "trying to bytes() a $SST is fatal");
+    like($error, qr/can't build.+from $SST/, "...with expected message");
+  }
+
+  {
+    my $lives = eval { bytes( [ ] ); 1 };
+    my $error = $@;
+    ok(! $lives, "trying to bytes() a non-string ref is fatal");
+    like($error, qr/can't build.+from ARRAY/, "...with expected message");
+  }
 };
 
 subtest "various inputs to decode()" => sub {

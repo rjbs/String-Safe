@@ -11,7 +11,7 @@ sub from_raw_string {
   Carp::croak("can't build a $class from undef") unless defined $input;
 
   my $blessed = Scalar::Util::blessed($input);
-  Carp::croak("can't build a $class from a $blessed object") if $blessed;
+  Carp::croak("can't build a $class from $blessed object") if $blessed;
 
   my $reftype = Scalar::Util::reftype $input;
 
@@ -27,7 +27,7 @@ sub from_raw_string {
     }
       
   } else {
-    Carp::croak("can't build a $class from a $reftype reference");
+    Carp::croak("can't build a $class from $reftype reference");
   }
 
   bless $ref => $class;
